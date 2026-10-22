@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Medicações Prescritas</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2 class="titulo">
+
+    <img
+      src="logo ospital.png"
+      alt="Logo Hospital"
+      class="logo"
+    >
+
+    💊 Medicações Prescritas
+
+  </h2>
+
+  <div id="listaMedicacoes"></div>
+
+</div>
+
+<script>
+
+function carregarMedicacoesPrescritas() {
+
+  fetch("/medicacoes")
+
+    .then(r => r.json())
+
+    .then(data => {
+
+      const div =
+        document.getElementById("listaMedicacoes");
+
+      div.innerHTML = "";
+
+      if (data.length === 0) {
+
+        div.innerHTML =
+          "<p>Nenhuma medicação prescrita.</p>";
+
+        return;
+
+      }
+
+      data.forEach(c => {
+
+        div.innerHTML += `
+
+          <div class="card">
+
+            <h3>${c.paciente}</h3>
+
+            <p>
+              <b>Medicação:</b>
+              ${c.medicacao}
+            </p>
+
+            <p>
+              <b>Diagnóstico:</b>
+              ${c.diagnostico}
+            </p>
+
+            <p>
+              <b>Observações:</b>
+              ${c.obs || "Nenhuma"}
+            </p>
+
+          </div>
+
+        `;
+
+      });
+
+    })
+
+    .catch(error => {
+
+      console.error("Erro:", error);
+
+      document.getElementById("listaMedicacoes").innerHTML =
+        "<p>Erro ao carregar as medicações.</p>";
+
+    });
+
+}
+
+carregarMedicacoesPrescritas();
+
+</script>
+
+</body>
+</html>

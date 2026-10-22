@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Pro - Cadastro de Usuários</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <a href="index.html">Voltar para o Login</a>
+
+        <h2>Cadastrar Usuário</h2>
+
+        <form id="formUsuario">
+            <input type="text" id="usuario"
+                   placeholder="Nome de usuário (login)" required>
+
+            <input type="password" id="senha"
+                   placeholder="Senha" required>
+
+            <select id="tipo" required>
+                <option value="">Selecione o setor</option>
+                <option value="atendimento">Atendimento</option>
+                <option value="triagem">Triagem</option>
+                <option value="medico">Médico</option>
+            </select>
+
+            <button type="submit">Cadastrar Usuário</button>
+        </form>
+
+        <p id="mensagem"></p>
+
+        <hr>
+        <h3>Usuários cadastrados</h3>
+        <div id="listaUsuarios"></div>
+    </div>
+
+    <script>
+        const formulario = document.getElementById("formUsuario");
+        const mensagem = document.getElementById("mensagem");
+        const lista = document.getElementById("listaUsuarios");
+
+       
+formulario.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const usuario = document.getElementById("usuario").value.trim();
+    const senha = document.getElementById("senha").value;
+    const tipo = document.getElementById("tipo").value;
+
+    mensagem.textContent = "Salvando usuário...";
+    mensagem.style.color = "blue";
+       
+try {
+    mensagem.textContent = "Salvando usuário...";
+    mensagem.style.color = "blue";
+
+    const resposta = await fetch("/usuarios", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ usuario, senha, tipo })
+    });
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || "Falha no cadastro.");
+    }
+
+    mensagem.textContent = "✅ Usuário cadastrado com sucesso!";
+    mensagem.style.color = "green";
+
+    formulario.reset();
+    await carregarUsuarios();
+
+} catch (erro) {
+    mensagem.textContent = "❌ " + erro.message;
+    mensagem.style.color = "red";
+    console.error("Erro no cadastro:", erro);
+}
+
+});
+
+
+        async function carregarUsuarios() {
+            try {
+                const resposta = await fetch("/usuarios");
+
+                if (!resposta.ok) {
+                    throw new Error("Não foi possível carregar os usuários.");
+                }
+
+                const usuarios = await resposta.json();
+                lista.replaceChildren();
+
+                if (usuarios.length === 0) {
+                    lista.textContent = "Nenhum usuário cadastrado.";
+                    return;
+                }
+
+                usuarios.forEach(u => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+
+                    // Nunca exibir a senha na lista.
+                    card.textContent = `Usuário: ${u.usuario} | Setor: ${u.tipo}`;
+                    lista.appendChild(card);
+                });
+            } catch (erro) {
+                lista.textContent = erro.message;
+                console.error(erro);
+            }
+        }
+
+        carregarUsuarios();
+    </script>
+</body>
+</html>

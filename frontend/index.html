@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sistema Hospitalar</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2 class="titulo">
+
+    <img
+      src="logo ospital.png"
+      alt="Logo Hospital"
+      class="logo"
+    >
+
+    Sistema Hospitalar
+
+  </h2>
+
+  <input
+    id="usuario"
+    placeholder="Usuário"
+  >
+
+  <input
+    id="senha"
+    type="password"
+    placeholder="Senha"
+  >
+
+  <button onclick="login()">
+    Entrar
+  </button>
+
+</div>
+
+<script>
+
+function login() {
+
+  fetch("http://localhost:3000/login", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      usuario: document.getElementById("usuario").value,
+
+      senha: document.getElementById("senha").value
+
+    })
+
+  })
+
+  .then(r => r.json())
+
+  .then(data => {
+
+    if (data.tipo === "triagem") {
+      location.href = "triagem.html";
+    }
+
+    if (data.tipo === "medico") {
+      location.href = "medico.html";
+    }
+
+    if (data.tipo === "atendimento") {
+      location.href = "atendimento.html";
+    }
+
+  })
+
+  .catch(error => {
+
+    console.error("Erro:", error);
+
+    alert("Erro ao conectar com o servidor.");
+
+  });
+
+}
+
+ // Atalho secreto: Ctrl + Alt + A rediresiona para admin2.html
+ window.addEventListener("keydown", function(e) {
+  if (e.ctrlKey && e.altKey && (e.key === "a" || e.key === "A")) {
+    e.preventDefault();
+    window.location.href = "admin.html";
+  }
+ });
+</script>
+
+</body>
+</html>

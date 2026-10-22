@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atendimento</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2 class="titulo">
+    <img src="logo ospital.png" alt="Logo Hospital" class="logo">
+    Atendimento
+  </h2>
+
+  <input id="nome" placeholder="Nome">
+
+  <input id="cpf" placeholder="CPF">
+
+  <select id="tipo">
+    <option>Convenio</option>
+    <option>Particular</option>
+  </select>
+
+  <input type="file" id="foto">
+
+  <button onclick="cadastrar()">Cadastrar</button>
+
+</div>
+
+<script>
+
+function cadastrar() {
+
+  fetch("http://localhost:3000/atendimento", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      nome: document.getElementById("nome").value,
+      cpf: document.getElementById("cpf").value,
+      tipo: document.getElementById("tipo").value
+    })
+
+  })
+  .then(r => r.json())
+  .then(() => {
+    alert("Paciente enviado para triagem");
+
+    document.getElementById("nome").value = "";
+    document.getElementById("cpf").value = "";
+  })
+  .catch(error => {
+    console.error("Erro:", error);
+    alert("Erro ao cadastrar paciente.");
+  });
+
+}
+
+</script>
+
+</body>
+</html>

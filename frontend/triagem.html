@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Triagem Hospitalar</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  ">
+
+    <h2 style="
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    ">
+
+      <img
+        src="logo ospital.png"
+        alt="Logo Hospital"
+        class="logo"
+      >
+
+      Triagem Hospitalar
+
+    </h2>
+
+
+    <button
+      class="btn-abrir-tv"
+      onclick="window.open('tv.html', '_blank')"
+    >
+      📺 Abrir Tela da TV
+    </button>
+
+  </div>
+
+
+  <div class="pacientes-fila">
+
+    <h3>
+
+      Pacientes cadastrados no Atendimento
+
+      <span>
+        Clique em "Chamar na TV" para chamar ao guichê
+      </span>
+
+    </h3>
+
+
+    <div id="fila-pacientes">
+
+      <p style="
+        color: #888;
+        text-align: center;
+      ">
+        Carregando...
+      </p>
+
+    </div>
+
+
+    <button
+      onclick="carregarPacientes()"
+      style="
+        margin-top: 8px;
+        background: #6c757d;
+        font-size: 13px;
+      "
+    >
+      🔁 Atualizar lista
+    </button>
+
+  </div>
+
+
+  <input
+    id="nome"
+    placeholder="Nome"
+  >
+
+
+  <select id="sintoma">
+
+    <option value="">
+      Selecione
+    </option>
+
+    <option value="dor_leve">
+      Dor leve
+    </option>
+
+    <option value="resfriado">
+      Resfriado
+    </option>
+
+    <option value="coriza">
+      Coriza
+    </option>
+
+    <option value="tosse">
+      Tosse
+    </option>
+
+    <option value="febre">
+      Febre
+    </option>
+
+    <option value="vomito">
+      Vômito
+    </option>
+
+    <option value="diarreia">
+      Diarreia
+    </option>
+
+    <option value="falta_ar_moderada">
+      Falta de ar moderada
+    </option>
+
+    <option value="falta_ar_grave">
+      Falta de ar grave
+    </option>
+
+    <option value="infarto">
+      Suspeita de infarto
+    </option>
+
+    <option value="avc">
+      Suspeita de AVC
+    </option>
+
+    <option value="convulsao">
+      Convulsão
+    </option>
+
+    <option value="hemorragia">
+      Hemorragia
+    </option>
+
+  </select>
+
+
+  <input
+    id="temp"
+    type="number"
+    placeholder="Temperatura"
+  >
+
+
+  <input
+    id="alergia"
+    placeholder="Alergias"
+  >
+
+
+  <textarea
+    id="observacao"
+    placeholder="Observações"
+  ></textarea>
+
+
+  <div id="resultado"></div>
+
+
+  <button onclick="salvar()">
+    Salvar Triagem
+  </button>
+
+</div>
+
+
+<script>
+
+function classificarRisco(sintoma, temperatura) {
+
+  const vermelhos = [
+
+    "infarto",
+    "avc",
+    "convulsao",
+    "hemorragia",
+    "falta_ar_grave"
+
+  ];
+
+
+  const amarelos = [
+
+    "febre",
+    "vomito",
+    "diarreia",
+    "falta_ar_moderada"
+
+  ];
+
+
+  if (temperatura >= 39) {
+    return "vermelho";
+  }
+
+
+  if (vermelhos.includes(sintoma)) {
+    return "vermelho";
+  }
+
+
+  if (amarelos.includes(sintoma)) {
+    return "amarelo";
+  }
+
+
+  return "verde";
+
+}
+
+
+function salvar() {
+
+  const nome =
+    document.getElementById("nome").value;
+
+
+  const sintoma =
+    document.getElementById("sintoma").value;
+
+
+  const temperatura =
+    Number(document.getElementById("temp").value);
+
+
+  const alergia =
+    document.getElementById("alergia").value;
+
+
+  const observacao =
+    document.getElementById("observacao").value;
+
+
+  const risco =
+    classificarRisco(
+      sintoma,
+      temperatura
+    );
+
+
+  fetch("http://localhost:3000/triagem", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      nome,
+      sintoma,
+      temperatura,
+      alergia,
+      observacao,
+      risco
+
+    })
+
+  })
+
+  .then(r => r.json())
+
+  .then(data => {
+
+    const resultado =
+      document.getElementById("resultado");
+
+
+    resultado.className = risco;
+
+
+    resultado.innerHTML =
+      "Classificação: " +
+      risco.toUpperCase();
+
+
+    alert("Triagem salva");
+
+  })
+
+  .catch(error => {
+
+    console.error("Erro:", error);
+
+    alert("Erro ao salvar triagem.");
+
+  });
+
+}
+
+
+function carregarPacientes() {
+
+  fetch("/pacientes")
+
+    .then(r => r.json())
+
+    .then(pacientes => {
+
+      const div =
+        document.getElementById("fila-pacientes");
+
+
+      const fila =
+        pacientes.filter(
+          p => p.status === "triagem"
+        );
+
+
+      if (fila.length === 0) {
+
+        div.innerHTML =
+          "<p style='color:#888; text-align:center;'>Nenhum paciente aguardando.</p>";
+
+        return;
+
+      }
+
+
+      div.innerHTML = "";
+
+
+      fila.forEach(p => {
+
+        const item =
+          document.createElement("div");
+
+
+        item.className =
+          "fila-item";
+
+
+        item.innerHTML = `
+
+          <div>
+
+            <strong>
+              ${p.nome}
+            </strong>
+
+            <br>
+
+            <small>
+              CPF: ${p.cpf || "-"}
+              |
+              Tipo: ${p.tipo || "-"}
+            </small>
+
+          </div>
+
+
+          <button
+            class="btn-tv"
+            onclick="chamarNaTV('${p.nome}')"
+          >
+            📺 Chamar na TV
+          </button>
+
+        `;
+
+
+        div.appendChild(item);
+
+      });
+
+    })
+
+    .catch(error => {
+
+      console.error("Erro:", error);
+
+      document.getElementById(
+        "fila-pacientes"
+      ).innerHTML =
+        "<p style='color:red;'>Erro ao carregar pacientes.</p>";
+
+    });
+
+}
+
+
+function chamarNaTV(nome) {
+
+  fetch("/tv/chamar", {
+
+    method: "POST",
+
+    headers: {"Content-Type": "application/json"},
+
+    body: JSON.stringify({
+
+      localTipo: "GUICHÊ",
+
+      localNumero: "01",
+
+      paciente: nome
+
+    })
+
+  })
+
+  .then(r => r.json())
+
+  .then(() => {
+
+    alert(
+      "✅ " + nome + " foi chamado na TV para o Guichê 01!");
+
+  })
+
+  .catch(error => {
+
+    console.error("Erro:", error);
+
+    alert("Erro ao chamar paciente na TV.");
+
+  });
+
+}
+
+// Carregar a fila ao abrir a página
+carregarPacientes();
+
+// Atualiza a lisata automaticamente a cada 10 segundos
+setInterval(carregarPacientes,10000);
+
+</script>
+
+</body>
+</html>
